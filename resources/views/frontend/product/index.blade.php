@@ -80,46 +80,46 @@
     <div class="row g-3">
       @foreach($products as $p)
         <div class="col-6 col-md-4 col-lg-3">
-          <div class="card soft-card h-100">
+          <article class="card soft-card product-list-card h-100">
 
             @if($p->image)
-              <img src="{{ asset($p->image) }}" class="thumb" alt="{{ $p->name }}">
+              <img src="{{ asset($p->image) }}" class="thumb product-list-card__media" alt="{{ $p->name }}">
             @else
-              <div class="noimg d-flex align-items-center justify-content-center" style="height:220px;">
+              <div class="noimg product-list-card__media d-flex align-items-center justify-content-center">
                 <span class="small text-muted">No Image</span>
               </div>
             @endif
 
-            <div class="card-body d-flex flex-column">
-              <h6 class="mb-1 fw-bold line-clamp-2">{{ $p->name }}</h6>
+            <div class="card-body product-list-card__content d-flex flex-column">
+              <h3>{{ $p->name }}</h3>
 
-              <div class="mb-2 text-muted small">
-                @if($p->stock > 0)
-                  In stock • Fast delivery
-                @else
-                  Out of stock
+              <p class="product-list-card__availability {{ $p->stock > 0 ? 'is-available' : 'is-unavailable' }}">
+                {{ $p->stock > 0 ? 'In stock • Fast delivery' : 'Out of stock' }}
+              </p>
+
+              <dl class="product-list-card__specs">
+                @if($p->brand)
+                  <div><dt>Brand:</dt><dd>{{ $p->brand }}</dd></div>
                 @endif
-              </div>
-
-              <div class="mb-2 small text-muted">
-                <div><strong>Brand:</strong> {{ $p->brand }}</div>
-                <div><strong>Model:</strong> {{ $p->model }}</div>
+                @if($p->model)
+                  <div><dt>Model:</dt><dd>{{ $p->model }}</dd></div>
+                @endif
                 @if($p->ram)
-                  <div><strong>RAM:</strong> {{ $p->ram }}</div>
+                  <div><dt>RAM:</dt><dd>{{ $p->ram }}</dd></div>
                 @endif
                 @if($p->storage)
-                  <div><strong>Storage:</strong> {{ $p->storage }}</div>
+                  <div><dt>Storage:</dt><dd>{{ $p->storage }}</dd></div>
                 @endif
                 @if($p->processor)
-                  <div><strong>Processor:</strong> {{ $p->processor }}</div>
+                  <div><dt>Processor:</dt><dd>{{ $p->processor }}</dd></div>
                 @endif
                 @if($p->screen_size)
-                  <div><strong>Screen:</strong> {{ $p->screen_size }}</div>
+                  <div><dt>Screen:</dt><dd>{{ $p->screen_size }}</dd></div>
                 @endif
-              </div>
+              </dl>
 
-              <div class="mb-3 d-flex align-items-center justify-content-between">
-                <span class="fw-bold">${{ number_format($p->price, 2) }}</span>
+              <div class="product-list-card__price-row">
+                <span class="product-list-card__price">${{ number_format($p->price, 2) }}</span>
                 <span class="border badge bg-light text-dark pill">
                   {{ $p->stock > 0 ? 'Popular' : 'Unavailable' }}
                 </span>
@@ -140,7 +140,7 @@
               </div>
             </div>
 
-          </div>
+          </article>
         </div>
       @endforeach
     </div>

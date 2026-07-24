@@ -21,107 +21,114 @@
 </head>
 <body class="bg-light">
 
-  {{-- NAVBAR --}}
-  <nav class="navbar navbar-expand-lg sticky-top bg-white shadow-sm" style="border-bottom: 1px solid #e5e7eb;">
-    <div class="container-fluid px-4">
-      <a class="navbar-brand fw-bold fs-4" href="{{ url('/') }}" style="color: #4f46e5;">
-        <i class="bi bi-laptop me-1"></i>Store
+  {{-- Apple-inspired global navigation --}}
+  @php
+    $cart = session()->get('cart', []);
+    $cartCount = collect($cart)->sum('qty');
+  @endphp
+  <nav class="store-nav navbar navbar-expand-lg sticky-top" aria-label="Main navigation">
+    <div class="store-nav__inner container-fluid">
+      <a class="store-nav__brand" href="{{ route('home') }}" aria-label="Store home">
+        <i class="bi bi-laptop" aria-hidden="true"></i>
       </a>
 
-      <button class="border-0 shadow-none navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#topNav">
-        <span class="navbar-toggler-icon"></span>
-      </button>
+      <div class="store-nav__mobile-actions d-flex d-lg-none align-items-center">
+        <a class="store-nav__icon position-relative" href="{{ route('cart.index') }}" aria-label="Shopping bag">
+          <i class="bi bi-bag" aria-hidden="true"></i>
+          <span id="cartBadgeMobile" class="store-nav__badge {{ $cartCount > 0 ? '' : 'd-none' }}">{{ $cartCount }}</span>
+        </a>
+        <button class="store-nav__toggle navbar-toggler" type="button" data-bs-toggle="collapse"
+          data-bs-target="#topNav" aria-controls="topNav" aria-expanded="false" aria-label="Toggle navigation">
+          <span></span><span></span>
+        </button>
+      </div>
 
       <div class="collapse navbar-collapse" id="topNav">
-        <ul class="mb-2 navbar-nav me-auto mb-lg-0">
+        <ul class="store-nav__links navbar-nav">
           <li class="nav-item">
-            <a class="nav-link px-3 rounded-pill me-1" href="{{ route('categories.index') }}" style="color: #374151;">
-              <i class="bi bi-grid me-1"></i>Categories
-            </a>
+            <a class="nav-link {{ request()->routeIs('home') ? 'active' : '' }}" href="{{ route('home') }}">Store</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link px-3 rounded-pill me-1" href="{{ route('about') }}" style="color: #374151;">
-              <i class="bi bi-info-circle me-1"></i>About
-            </a>
+            <a class="nav-link {{ request()->routeIs('products.*') ? 'active' : '' }}" href="{{ route('products.index') }}">Products</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link {{ request()->routeIs('categories.*', 'category.*') ? 'active' : '' }}" href="{{ route('categories.index') }}">Categories</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link {{ request()->routeIs('about') ? 'active' : '' }}" href="{{ route('about') }}">About</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{{ route('home') }}#featured-products">New Arrivals</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#store-footer">Support</a>
           </li>
         </ul>
 
-        {{-- Right actions --}}
-        <div class="gap-2 d-flex align-items-center">
-          @php
-            $cart = session()->get('cart', []);
-            $cartCount = collect($cart)->sum('qty');
-          @endphp
-          <a href="{{ route('cart.index') }}" class="btn btn-primary rounded-pill px-3 position-relative" style="background: #4f46e5; border-color: #4f46e5;">
-            <i class="bi bi-cart3 me-1"></i>Cart
-            @if($cartCount > 0)
-              <span id="cartBadge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.65rem;">
-                {{ $cartCount }}
-              </span>
-            @else
-              <span id="cartBadge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.65rem; display: none;">
-                0
-              </span>
-            @endif
-          </a>
-
+        <div class="store-nav__actions d-flex align-items-center">
           @auth
             <div class="dropdown">
-              <button class="btn btn-light rounded-pill dropdown-toggle px-3 d-flex align-items-center" data-bs-toggle="dropdown" style="border: 1px solid #e5e7eb; gap: 0.5rem;">
+              <button class="store-nav__icon" type="button" data-bs-toggle="dropdown" aria-expanded="false"
+                aria-label="Open account menu">
                 @if(auth()->user()->avatar)
-                  <img src="{{ auth()->user()->avatar }}" alt="Avatar" class="rounded-circle" style="width: 24px; height: 24px; object-fit: cover;">
+                  <img src="{{ auth()->user()->avatar }}" alt="" class="store-nav__avatar">
                 @else
-                  <i class="bi bi-person-circle" style="color: #4f46e5; font-size: 1.2rem;"></i>
+                  <i class="bi bi-person" aria-hidden="true"></i>
                 @endif
-                <span class="fw-medium">{{ auth()->user()->name }}</span>
               </button>
-              <ul class="dropdown-menu dropdown-menu-end shadow-lg" style="border: none; border-radius: 12px;">
+              <ul class="dropdown-menu dropdown-menu-end">
+                <li class="px-3 pt-2 pb-1 small text-muted">Hello, {{ auth()->user()->name }}</li>
                 <li><a class="dropdown-item py-2" href="{{ route('profile') }}"><i class="bi bi-person me-2"></i>Profile</a></li>
                 <li><hr class="dropdown-divider"></li>
                 <li>
                   <form action="{{ url('logout') }}" method="POST" class="m-0">
                     @csrf
-                    <button class="dropdown-item py-2">
-                      <i class="bi bi-box-arrow-right me-2"></i>Logout
-                    </button>
+                    <button class="dropdown-item py-2"><i class="bi bi-box-arrow-right me-2"></i>Logout</button>
                   </form>
                 </li>
               </ul>
             </div>
           @else
-            <a href="{{ url('login') }}" class="btn btn-light rounded-pill px-3" style="border: 1px solid #e5e7eb; color: #374151;">
-              <i class="bi bi-box-arrow-in-right me-1"></i>Login
+            <a class="store-nav__icon" href="{{ url('login') }}" aria-label="Log in">
+              <i class="bi bi-person" aria-hidden="true"></i>
             </a>
           @endauth
+
+          <a class="store-nav__icon position-relative d-none d-lg-flex" href="{{ route('cart.index') }}" aria-label="Shopping bag">
+            <i class="bi bi-bag" aria-hidden="true"></i>
+            <span id="cartBadge" class="store-nav__badge {{ $cartCount > 0 ? '' : 'd-none' }}">{{ $cartCount }}</span>
+          </a>
         </div>
       </div>
     </div>
   </nav>
 
-  {{-- HEADER / HERO --}}
-  <header class="container-fluid px-4 mt-3">
-    <div class="card border-0 shadow-sm" style="border-radius: 20px; background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);">
-      <div class="card-body py-4 px-4">
-        <div class="row align-items-center g-3">
-          <div class="col-md-7">
-            <h1 class="mb-2 fw-bold text-white">@yield('hero_title','Welcome to Store Electronics')</h1>
-            <p class="mb-0 text-white-50">@yield('hero_subtitle','Discover the latest laptops and accessories at great prices')</p>
-          </div>
-          <div class="col-md-5 text-md-end">
-            @yield('hero_action')
+  @unless(View::hasSection('custom_storefront'))
+    {{-- HEADER / HERO --}}
+    <header class="container-fluid px-4 mt-3">
+      <div class="card border-0 shadow-sm" style="border-radius: 20px; background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);">
+        <div class="card-body py-4 px-4">
+          <div class="row align-items-center g-3">
+            <div class="col-md-7">
+              <h1 class="mb-2 fw-bold text-white">@yield('hero_title','Welcome to Store Electronics')</h1>
+              <p class="mb-0 text-white-50">@yield('hero_subtitle','Discover the latest laptops and accessories at great prices')</p>
+            </div>
+            <div class="col-md-5 text-md-end">
+              @yield('hero_action')
+            </div>
           </div>
         </div>
       </div>
-    </div>
-  </header>
+    </header>
 
-  {{-- BREADCRUMB --}}
-  <section class="container-fluid px-4 mt-2">
-    @yield('breadcrumb')
-  </section>
+    {{-- BREADCRUMB --}}
+    <section class="container-fluid px-4 mt-2">
+      @yield('breadcrumb')
+    </section>
+  @endunless
 
   {{-- CONTENT --}}
-  <main class="container-fluid px-4 mt-3 min-vh-70">
+  <main id="featured-products" class="@yield('main_class', 'container-fluid px-4 mt-3 min-vh-70')">
     @if(session('success'))
       <div class="alert alert-success d-flex align-items-center gap-2 rounded-3 shadow-sm border-0" style="background: #d1fae5; color: #065f46;">
         <i class="bi bi-check-circle-fill"></i>
@@ -133,10 +140,10 @@
   </main>
 
   {{-- FOOTER --}}
-  <footer class="mt-5 py-4" style="background: #1f2937;">
+  <footer id="store-footer" class="mt-5 py-4" style="background: #1f2937;">
     <div class="container-fluid px-4">
       <div class="row g-4">
-        <div class="col-md-4">
+        <div class="col-md-6 col-lg-3">
           <div class="mb-2 fw-bold fs-5" style="color: #4f46e5;">
             <i class="bi bi-laptop me-2"></i>Store Electronics
           </div>
@@ -144,7 +151,7 @@
             Your trusted source for laptops and electronics in Cambodia.
           </div>
         </div>
-        <div class="col-6 col-md-3">
+        <div class="col-6 col-md-3 col-lg-2">
           <div class="mb-2 fw-semibold" style="color: #f3f4f6;">Quick Links</div>
           <div class="d-grid gap-2 small">
             <a href="{{ route('categories.index') }}" class="text-decoration-none" style="color: #9ca3af;">Categories</a>
@@ -152,13 +159,26 @@
             <a href="#" class="text-decoration-none" style="color: #9ca3af;">Contact</a>
           </div>
         </div>
-        <div class="col-6 col-md-4">
+        <div class="col-6 col-md-3 col-lg-3">
           <div class="mb-2 fw-semibold" style="color: #f3f4f6;">Contact Us</div>
           <div class="small" style="color: #9ca3af;">
-            <div class="mb-1"><i class="bi bi-geo-alt me-1"></i>Phnom Penh, Cambodia</div>
+            <div class="mb-1">
+              <i class="bi bi-geo-alt me-1"></i>BELTEI IU Campus 1, Tuol Sleng
+            </div>
             <div class="mb-1"><i class="bi bi-telephone me-1"></i>+855 10 800 921</div>
             <div><i class="bi bi-envelope me-1"></i>sembunly2005@gmail.com</div>
           </div>
+        </div>
+        <div class="col-12 col-lg-4">
+          <div class="mb-2 fw-semibold" style="color: #f3f4f6;">Find Us</div>
+          <iframe
+            class="store-footer__map"
+            src="https://maps.google.com/maps?q=BELTEI%20International%20University%20Campus%201%20Tuol%20Sleng%2C%2021%20Street%20360%2C%20Phnom%20Penh&amp;t=&amp;z=16&amp;ie=UTF8&amp;iwloc=&amp;output=embed"
+            title="BELTEI International University Campus 1, Tuol Sleng"
+            loading="lazy"
+            allowfullscreen
+            referrerpolicy="strict-origin-when-cross-origin">
+          </iframe>
         </div>
       </div>
       <hr class="my-4" style="border-color: #374151;">
@@ -196,15 +216,19 @@
 
     // Update cart badge in navbar
     function updateCartBadge(count) {
-      const badge = document.getElementById('cartBadge');
-      if (badge) {
+      const badges = [
+        document.getElementById('cartBadge'),
+        document.getElementById('cartBadgeMobile')
+      ];
+      badges.forEach((badge) => {
+        if (!badge) return;
         if (count > 0) {
           badge.textContent = count;
-          badge.style.display = 'inline';
+          badge.classList.remove('d-none');
         } else {
-          badge.style.display = 'none';
+          badge.classList.add('d-none');
         }
-      }
+      });
     }
 
     @if(session('cart_toast'))
