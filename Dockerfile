@@ -32,6 +32,9 @@ RUN a2enmod mpm_prefork
 
 RUN a2enmod rewrite
 
+COPY apache-mpm.conf /etc/apache2/conf-available/mpm-override.conf
+RUN a2enconf mpm-override
+
 RUN sed -ri \
     -e "s!/var/www/html!${APACHE_DOCUMENT_ROOT}!g" \
     /etc/apache2/sites-available/*.conf \
