@@ -315,11 +315,11 @@ a {
     .thumb, .noimg {
         height: 180px;
     }
-    
+
     .search-filter-card {
         padding: 16px;
     }
-    
+
     .pagination .page-item .page-link {
         padding: 8px 12px;
         min-width: 40px;
