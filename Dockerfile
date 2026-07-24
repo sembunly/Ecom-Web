@@ -1,7 +1,6 @@
-FROM php:8.4-apache
+FROM php:8.4-fpm as php
 
 ENV COMPOSER_ALLOW_SUPERUSER=1
-ENV APACHE_DOCUMENT_ROOT=/var/www/html/public
 
 RUN apt-get update && apt-get install -y \
     git \
@@ -27,20 +26,6 @@ RUN apt-get update && apt-get install -y \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-RUN a2dismod mpm_worker mpm_event || true
-RUN a2enmod mpm_prefork
-
-RUN a2enmod rewrite
-
-COPY apache-mpm.conf /etc/apache2/conf-available/mpm-override.conf
-RUN a2enconf mpm-override
-
-RUN sed -ri \
-    -e "s!/var/www/html!${APACHE_DOCUMENT_ROOT}!g" \
-    /etc/apache2/sites-available/*.conf \
-    /etc/apache2/apache2.conf \
-    /etc/apache2/conf-available/*.conf
-
 WORKDIR /var/www/html
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
@@ -62,7 +47,20 @@ RUN mkdir -p \
     && chown -R www-data:www-data storage bootstrap/cache \
     && chmod -R 775 storage bootstrap/cache
 
-CMD sed -i "s/Listen 80/Listen ${PORT:-80}/" /etc/apache2/ports.conf \
-    && sed -i "s/:80/:${PORT:-80}/g" /etc/apache2/sites-available/000-default.conf \
-    && php artisan optimize:clear \
-    && apache2-foreground
+FROM nginx:alpine
+
+COPY --from=php /var/www/html /var/www/html
+COPY nginx.conf /etc/nginx/sites-available/default
+
+RUN chown -R www-data:www-data /var/www/html && \
+    chmod -R 755 /var/www/html && \
+    ln -sf /dev/stdout /var/log/nginx/access.log && \
+    ln -sf /dev/stderr /var/log/nginx/error.log
+
+COPY --from=php --chown=www-data:www-data /usr/local/etc/php /usr/local/etc/php
+
+RUN echo "daemon off;" >> /etc/nginx/nginx.conf
+
+EXPOSE ${PORT:-80}
+
+CMD ["/bin/sh", "-c", "php-fpm -d listen=127.0.0.1:9000 & exec nginx"]
