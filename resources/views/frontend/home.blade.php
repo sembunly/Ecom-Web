@@ -1,193 +1,153 @@
 @extends('layouts.frontend')
 
-@section('title', 'Home')
-@section('hero_title', 'All Products')
-@section('hero_subtitle', 'Search, filter, sort, and add to cart easily')
-
-@section('hero_action')
-  <a class="px-4 btn btn-dark pill" href="{{ route('categories.index') }}">
-    <i class="bi bi-grid me-1"></i> Browse Categories
-  </a>
-@endsection
-
-@section('breadcrumb')
-  <nav aria-label="breadcrumb">
-    <ol class="mb-0 breadcrumb">
-      <li class="breadcrumb-item">
-        <a href="{{ url('/') }}" class="text-decoration-none">Home</a>
-      </li>
-      <li class="breadcrumb-item">
-        <a href="{{ url('/categories') }}" class="text-decoration-none">Categories</a>
-      </li>
-    </ol>
-  </nav>
-@endsection
-
-@push('styles')
-  <style>
-    .thumb {
-      width: 100%;
-      height: 220px;
-      object-fit: cover;
-      object-position: center;
-      display: block;
-      border-top-left-radius: 16px;
-      border-top-right-radius: 16px;
-    }
-
-    .noimg {
-      width: 100%;
-      height: 220px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: #f8f9fa;
-      border-top-left-radius: 16px;
-      border-top-right-radius: 16px;
-    }
-  </style>
-@endpush
+@section('title', 'Store Electronics')
+@section('custom_storefront', true)
+@section('main_class', 'storefront-main min-vh-70')
 
 @section('content')
+  <section class="store-promo">
+    <p class="mb-0">
+      Discover the latest electronics, selected for work, play, and everything in between.
+      <a href="{{ route('products.index') }}">Shop now <i class="bi bi-arrow-right-short"></i></a>
+    </p>
+  </section>
 
-  <div class="row g-4">
-    {{-- Left Sidebar: Filters --}}
-    <div class="col-lg-3">
-      <form method="GET" class="search-filter-card">
-        <h5 class="mb-3 fw-bold" style="color: #4f46e5;">
-          <i class="bi bi-funnel me-2"></i>Filters
-        </h5>
+  <div class="storefront-container">
+    <section class="store-intro">
+      <h1><span>Store.</span> The best way to buy the products you love.</h1>
 
-        <div class="mb-3">
-          <label class="form-label small fw-medium">Search</label>
-          <input type="text" name="q" value="{{ request('q') }}" class="form-control" placeholder="Search products...">
+      <div class="store-intro__help">
+        <div class="store-intro__help-icon"><i class="bi bi-chat-dots-fill"></i></div>
+        <div>
+          <strong>Need shopping help?</strong>
+          <a href="#store-footer">Connect with us <i class="bi bi-arrow-up-right"></i></a>
         </div>
+      </div>
+    </section>
 
-        <div class="mb-3">
-          <label class="form-label small fw-medium">Category</label>
-          <select name="category" class="form-select">
-            <option value="">All Categories</option>
-            @foreach($categories as $c)
-              <option value="{{ $c->id }}" @selected(request('category') == $c->id)>
-                {{ $c->name }}
-              </option>
-            @endforeach
-          </select>
+    <section class="store-categories" aria-labelledby="category-title">
+      <div class="store-section-heading">
+        <h2 id="category-title"><span>Categories.</span> Find what you’re looking for.</h2>
+        <a href="{{ route('categories.index') }}">View all <i class="bi bi-chevron-right"></i></a>
+      </div>
+
+      <div class="store-category-row">
+        @forelse($categories as $category)
+          <a class="store-category" href="{{ route('category.products', $category->id) }}">
+            <span class="store-category__image">
+              @if($category->image)
+                <img src="{{ asset($category->image) }}" alt="{{ $category->name }}">
+              @else
+                <i class="bi bi-laptop" aria-hidden="true"></i>
+              @endif
+            </span>
+            <span class="store-category__name">{{ $category->name }}</span>
+          </a>
+        @empty
+          <div class="store-empty">Categories will appear here when they are added.</div>
+        @endforelse
+      </div>
+    </section>
+
+    <section class="store-products" aria-labelledby="latest-title">
+      <div class="store-section-heading store-section-heading--products">
+        <h2 id="latest-title"><span>The latest.</span> Take a look at what’s new right now.</h2>
+      </div>
+
+      @if(request('q'))
+        <div class="store-search-result">
+          Results for “{{ request('q') }}”
+          <a href="{{ route('home') }}">Clear search</a>
         </div>
+      @endif
 
-        <div class="mb-3">
-          <label class="form-label small fw-medium">Price Range</label>
-          <div class="row g-2">
-            <div class="col-6">
-              <input type="number" name="min_price" value="{{ request('min_price') }}" class="form-control"
-                placeholder="Min">
-            </div>
-            <div class="col-6">
-              <input type="number" name="max_price" value="{{ request('max_price') }}" class="form-control"
-                placeholder="Max">
+      <div class="row g-4">
+        @forelse($products as $product)
+          <div class="col-6 col-lg-3">
+            <article class="store-product-card">
+              <a class="store-product-card__link" href="{{ route('products.show', $product->id) }}"
+                aria-label="View {{ $product->name }}"></a>
+
+              <div class="store-product-card__media">
+                @if($product->image)
+                  <img src="{{ asset($product->image) }}" alt="{{ $product->name }}">
+                @else
+                  <i class="bi bi-laptop" aria-hidden="true"></i>
+                @endif
+              </div>
+
+              <div class="store-product-card__content">
+                <div class="store-product-card__eyebrow">
+                  {{ $loop->first && $products->currentPage() === 1 ? 'NEW' : ($product->category?->name ?? 'FEATURED') }}
+                </div>
+                <h3>{{ $product->name }}</h3>
+                <p class="store-product-card__availability {{ $product->stock > 0 ? 'is-available' : 'is-unavailable' }}">
+                  {{ $product->stock > 0 ? 'In stock • Fast delivery' : 'Out of stock' }}
+                </p>
+
+                <dl class="store-product-card__specs">
+                  @if($product->brand)
+                    <div><dt>Brand:</dt><dd>{{ $product->brand }}</dd></div>
+                  @endif
+                  @if($product->model)
+                    <div><dt>Model:</dt><dd>{{ $product->model }}</dd></div>
+                  @endif
+                  @if($product->ram)
+                    <div><dt>RAM:</dt><dd>{{ $product->ram }}</dd></div>
+                  @endif
+                  @if($product->storage)
+                    <div><dt>Storage:</dt><dd>{{ $product->storage }}</dd></div>
+                  @endif
+                  @if($product->processor)
+                    <div><dt>Processor:</dt><dd>{{ $product->processor }}</dd></div>
+                  @endif
+                  @if($product->screen_size)
+                    <div><dt>Screen:</dt><dd>{{ $product->screen_size }}</dd></div>
+                  @endif
+                </dl>
+
+                <div class="store-product-card__price">${{ number_format($product->price, 2) }}</div>
+              </div>
+
+              <button type="button" class="store-product-card__add js-add-to-cart"
+                data-url="{{ route('cart.add', $product->id) }}"
+                data-name="{{ $product->name }}"
+                aria-label="Add {{ $product->name }} to cart"
+                @disabled($product->stock < 1)>
+                <i class="bi {{ $product->stock > 0 ? 'bi-plus-lg' : 'bi-x-lg' }}"></i>
+              </button>
+            </article>
+          </div>
+        @empty
+          <div class="col-12">
+            <div class="store-empty store-empty--products">
+              <h3>No products found.</h3>
+              <p>Try another search or browse all categories.</p>
+              <a href="{{ route('home') }}">View all products</a>
             </div>
           </div>
-        </div>
+        @endforelse
+      </div>
 
-        <div class="mb-3">
-          <label class="form-label small fw-medium">Sort By</label>
-          <select name="sort" class="form-select">
-            <option value="">Default</option>
-            <option value="latest" @selected(request('sort') == 'latest')>Latest</option>
-            <option value="price_asc" @selected(request('sort') == 'price_asc')>Price: Low to High</option>
-            <option value="price_desc" @selected(request('sort') == 'price_desc')>Price: High to Low</option>
-            <option value="name_asc" @selected(request('sort') == 'name_asc')>Name: A to Z</option>
-            <option value="name_desc" @selected(request('sort') == 'name_desc')>Name: Z to A</option>
-          </select>
-        </div>
-
-        <div class="gap-2 d-grid">
-          <button type="submit" class="btn btn-primary">
-            <i class="bi bi-funnel me-1"></i> Apply Filters
-          </button>
-          <a href="{{ route('home') }}" class="btn btn-outline-secondary">
-            <i class="bi bi-arrow-counterclockwise me-1"></i> Reset
-          </a>
-        </div>
-      </form>
-    </div>
-
-    {{-- Right Side: Products --}}
-    <div class="col-lg-9">
-      @if($products->count() == 0)
-        <div class="p-4 border alert alert-light rounded-4">
-          <div class="fw-bold">No products found.</div>
-          <div class="text-muted">Try different filters.</div>
-        </div>
-      @else
-        <div class="row g-3">
-          @foreach($products as $p)
-            <div class="col-6 col-md-4 col-lg-3">
-              <div class="card soft-card h-100">
-
-                @if($p->image)
-                  <img src="{{ asset($p->image) }}" class="thumb" alt="{{ $p->name }}">
-                @else
-                  <div class="noimg"><span class="small">No Image</span></div>
-                @endif
-
-                <div class="card-body d-flex flex-column">
-                  <div class="mb-1 fw-bold line-clamp-2">{{ $p->name }}</div>
-
-                  <div class="mb-1 text-muted small">
-                    {{ $p->brand ?? 'No Brand' }}
-                  </div>
-
-                  <div class="mb-2 text-muted small">
-                    Stock: {{ $p->stock }}
-                  </div>
-
-                  <div class="mb-3 d-flex justify-content-between align-items-center">
-                    <span class="fw-bold">${{ number_format($p->price, 2) }}</span>
-                    <span class="border badge bg-light text-dark pill">
-                      {{ $p->category?->name ?? 'Uncategorized' }}
-                    </span>
-                  </div>
-
-                  <div class="gap-2 mt-auto d-flex align-items-stretch">
-                    <a class="py-2 btn btn-dark pill flex-grow-1 btn-sm" href="{{ route('products.show', $p->id) }}">
-                      Detail
-                    </a>
-
-                    <button type="button" class="flex-shrink-0 px-3 py-2 btn btn-success pill btn-sm js-add-to-cart"
-                      data-url="{{ route('cart.add', $p->id) }}" data-name="{{ $p->name }}">
-                      + Add
-                    </button>
-                  </div>
-
-                </div>
-              </div>
-            </div>
-          @endforeach
-        </div>
-
-        <div class="mt-4 d-flex justify-content-center">
+      @if($products->hasPages())
+        <div class="store-pagination">
           {{ $products->withQueryString()->links('pagination::bootstrap-5') }}
         </div>
       @endif
-    </div>
+    </section>
   </div>
-
 @endsection
 
 @push('scripts')
   <script>
-    document.querySelectorAll('.js-add-to-cart').forEach(btn => {
-      btn.addEventListener('click', async () => {
-        const url = btn.dataset.url;
-        const name = btn.dataset.name || 'Item';
-
-        btn.disabled = true;
-        const oldHtml = btn.innerHTML;
-        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Adding';
+    document.querySelectorAll('.js-add-to-cart').forEach((button) => {
+      button.addEventListener('click', async () => {
+        const oldHtml = button.innerHTML;
+        button.disabled = true;
+        button.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
 
         try {
-          const res = await fetch(url, {
+          const response = await fetch(button.dataset.url, {
             method: 'POST',
             headers: {
               'X-CSRF-TOKEN': '{{ csrf_token() }}',
@@ -197,22 +157,19 @@
             },
             body: new URLSearchParams({ qty: 1 })
           });
+          const data = await response.json().catch(() => ({}));
 
-          const data = await res.json().catch(() => ({}));
-
-          if (!res.ok) {
-            throw new Error(data.message || 'Request failed');
+          if (!response.ok) {
+            throw new Error(data.message || 'Cannot add this product.');
           }
 
-          showCartToast(data.message || `${name} added to cart!`);
-          if (data.cart_count !== undefined) {
-            updateCartBadge(data.cart_count);
-          }
-        } catch (e) {
-          showCartToast(e.message || 'Cannot add to cart. Please try again.');
+          showCartToast(data.message || `${button.dataset.name} added to cart!`);
+          if (data.cart_count !== undefined) updateCartBadge(data.cart_count);
+        } catch (error) {
+          showCartToast(error.message || 'Cannot add to cart. Please try again.');
         } finally {
-          btn.disabled = false;
-          btn.innerHTML = oldHtml;
+          button.disabled = false;
+          button.innerHTML = oldHtml;
         }
       });
     });
